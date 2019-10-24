@@ -1,4 +1,4 @@
-﻿#include "IPlatformPath.h"
+﻿#include "PlatformPath/IPlatformPath.h"
 
 #include <Windows.h>
 
@@ -9,6 +9,7 @@ std::string IPlatformPath::ModulePathName()
 	GetModuleFileName(nullptr, buffer, MAX_PATH);
 	return std::string(buffer);
 }
+
 
 class PlatformPath : public IPlatformPath
 {
@@ -24,7 +25,7 @@ public:
 	// Inherited via IPlatformPath
 	std::string GetModulePathName() const override;
 	std::string GetModulePath() const override;
-	std::string GetRelativePath(const std::string & relativePath) const override;
+	std::string GetFullPath(const std::string & relativePath) const override;
 
 private:
 
@@ -49,7 +50,7 @@ std::string PlatformPath::GetModulePath() const
 	return modulePath_;
 }
 
-std::string PlatformPath::GetRelativePath(const std::string & relativePath) const
+std::string PlatformPath::GetFullPath(const std::string & relativePath) const
 {
 	return std::string(modulePath_ + relativePath);
 }
