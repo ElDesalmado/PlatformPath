@@ -1,0 +1,3 @@
+﻿#define PlatformPath_VERSION_MAJOR @PlatformPath_VERSION_MAJOR@
+#define PlatformPath_VERSION_MINOR @PlatformPath_VERSION_MINOR@
+
