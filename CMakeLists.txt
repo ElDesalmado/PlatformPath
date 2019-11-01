@@ -13,8 +13,8 @@ configure_file(
 	${PROJECT_BINARY_DIR}/include/PlatformPath/IPlatformPath_version.h
 	)
 
-add_library(PlatformPath
-		${PROJECT_SOURCE_DIR}/src/PlatformPath.cpp
+add_library(${PROJECT_NAME}
+		src/PlatformPath.cpp
 	)
 
 option(BUILD_SHARED_LIBS "Build as a shared library?" OFF)
@@ -22,19 +22,20 @@ message(STATUS "BUILD_SHARED " ${BUILD_SHARED})
 
 include(GenerateExportHeader)
 
-generate_export_header(PlatformPath
+generate_export_header(${PROJECT_NAME}
 	EXPORT_MACRO_NAME PlPath_API
 	EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/PlatformPath/api_def.h
 	)
 
-target_include_directories(PlatformPath
+target_include_directories(${PROJECT_NAME}
 	PUBLIC
-		$<INSTALL_INTERFACE:include>
 		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 		$<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+	INTERFACE
+		$<INSTALL_INTERFACE:include>
 	)
 	
-set_target_properties(PlatformPath
+set_target_properties(${PROJECT_NAME}
 	PROPERTIES
 		DEBUG_POSTFIX "_d"
 		RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin
@@ -44,13 +45,37 @@ set_target_properties(PlatformPath
 
 add_subdirectory(test)	
 
+# installation
+
+set(config_install_dir ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+set(version_config ${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake)
+set(project_config ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake)
+set(targets_export_name ${PROJECT_NAME}Targets)
+
+
+include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
-message(STATUS "Project will be installed to ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "${PROJECT_NAME} will be installed to ${CMAKE_INSTALL_PREFIX}")
+
+configure_package_config_file(
+		${PROJECT_SOURCE_DIR}/config/${PROJECT_NAME}Config.cmake.in
+		${project_config}
+	INSTALL_DESTINATION 
+		${config_install_dir}
+	)
+	
+write_basic_package_version_file(
+		${version_config}
+	VERSION 
+		${PlatformPath_VERSION}
+	COMPATIBILITY 
+		SameMajorVersion
+	)
 
 install(TARGETS
-		PlatformPath
+		${PROJECT_NAME}
 	EXPORT 
-		PlatformPathConfig
+		${targets_export_name}
 	ARCHIVE
 		DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	LIBRARY
@@ -64,26 +89,15 @@ install(DIRECTORY
 	DESTINATION 
 		${CMAKE_INSTALL_INCLUDEDIR}
 	)
-install(EXPORT PlatformPathConfig
+install(EXPORT 
+		${targets_export_name}
 	DESTINATION
-		${CMAKE_INSTALL_PREFIX}/cmake
+		${config_install_dir}
 	)
 
-
-include(CMakePackageConfigHelpers)
-#configure_package_config_file(${PROJECT_SOURCE_DIR}/config/PlatformPathConfig.cmake.in
-#		"${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
-#	INSTALL_DESTINATION 
-#		${CMAKE_INSTALL_PREFIX}/cmake # change?
-#	)
-write_basic_package_version_file(
-	"${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
-	VERSION ${PlatformPath_VERSION}
-	COMPATIBILITY SameMajorVersion
-	)
-
-install(DIRECTORY
-		${PROJECT_BINARY_DIR}/cmake
+install(FILES
+		${project_config}
+		${version_config}
 	DESTINATION	
-		${CMAKE_INSTALL_PREFIX}
+		${config_install_dir}
 	)
